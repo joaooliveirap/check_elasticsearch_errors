@@ -28,7 +28,7 @@ class Errors(nagiosplugin.Resource):
                                     "lte": self.finish }}},
                             { "range": {
                                 "timestamp": {
-                                    "gte": "now-1h"
+                                    "gte": "now-1m"
                                 }
                             }
                             }
