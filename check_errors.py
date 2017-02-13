@@ -4,10 +4,12 @@ import nagiosplugin
 from elasticsearch import Elasticsearch
 
 class Errors(nagiosplugin.Resource):
-    def __init__(self, elasticsearchServer, begin, finish):
+    def __init__(self, elasticsearchServer, env, profile, begin, finish):
         self.elasticsearchServer = elasticsearchServer
         self.begin = begin
         self.finish = finish
+        self.env = env
+        self.profile = profile
 
     def probe(self):
         client = Elasticsearch([self.elasticsearchServer])
@@ -18,6 +20,8 @@ class Errors(nagiosplugin.Resource):
                 "query" : {
                     "bool": {
                         "must": [
+                            { "term": {"env": self.env}},
+                            { "term": {"profile": self.profile}},
                             { "range": {
                                 "response": {
                                     "gte": self.begin,
@@ -29,7 +33,6 @@ class Errors(nagiosplugin.Resource):
                             }
                             }
                         ],
-
                     }
                 }
             })
@@ -47,6 +50,10 @@ def main():
                       help='increase output verbosity')
     argp.add_argument('-H', '--host', action='store', default='',
                       help='increase')
+    argp.add_argument('-e', '--env', action='store', default='',
+                      help='count response code for environment')
+    argp.add_argument('-p', '--profile', action='store', default='',
+                      help='count response code for profile')
     argp.add_argument('-b', '--begin', action='store', default='',
                       help='count response code from VALUE')
     argp.add_argument('-f', '--finish', action='store', default='',
@@ -54,7 +61,7 @@ def main():
     args = argp.parse_args()
 
     check = nagiosplugin.Check(
-        Errors(elasticsearchServer=args.host, begin=args.begin, finish=args.finish),
+        Errors(elasticsearchServer=args.host, env=args.env, profile=args.profile, begin=args.begin, finish=args.finish),
         nagiosplugin.ScalarContext('response', nagiosplugin.Range("%d" % args.warning), nagiosplugin.Range("%d" % args.critical)))
     check.main(verbose=args.verbose)
 
