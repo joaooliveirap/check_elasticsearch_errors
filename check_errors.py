@@ -12,7 +12,7 @@ class Errors(nagiosplugin.Resource):
         self.profile = profile
 
     def probe(self):
-        client = Elasticsearch([self.elasticsearchServer])
+        client = Elasticsearch([self.elasticsearchServer], timeout=30)
 
         response = client.count(
             index="nginx-*",
